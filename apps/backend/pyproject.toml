@@ -22,7 +22,7 @@ dev = [
   "pytest-cov>=6.3,<7",
   "ruff>=0.14,<0.15",
   "mypy>=1.18,<2",
-  "django-stubs[compatible-mypy]>=5.2,<6",
+  "django-stubs[compatible-mypy]>=5.2,<7",
   "djangorestframework-stubs>=3.16,<4",
 ]
 

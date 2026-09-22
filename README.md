@@ -21,7 +21,7 @@ The web and mobile apps share the API contract. The component library is the mob
 - Python 3.13, Django 5.2 LTS, Django REST Framework, PostgreSQL 18.4, psycopg 3, uv.
 - Node.js 24 LTS, pnpm workspaces, React 19, TypeScript, Vite 8, React Router, TanStack Query.
 - Expo SDK 57, React Native 0.86.3, Expo Router, SecureStore, personal component library 0.1.0-rc.2.
-- drf-spectacular and Orval-generated Fetch clients.
+- drf-spectacular and Orval-generated Fetch clients with TanStack Query hooks.
 
 Mobile compatibility is pinned to the newest stable Expo/RN line accepted by the personal library's peers. The component library's `rc` channel is the only prerelease dependency exception. See [mobile UI architecture](docs/architecture/mobile-ui.md) and [upgrade policy](docs/upgrades.md).
 

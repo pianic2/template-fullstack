@@ -1,2 +1,2 @@
 export * from './generated/api';
-export { configureApiClient } from './fetcher';
+export { ApiError, configureApiClient, customFetch } from './fetcher';

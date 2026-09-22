@@ -44,10 +44,11 @@ jobs:
       - run: corepack enable
       - run: corepack pnpm install --frozen-lockfile
       - run: corepack pnpm exec eslint apps packages
+      - run: corepack pnpm --filter @template/api-client typecheck
       - run: corepack pnpm --filter @template/web typecheck
       - run: corepack pnpm --filter @template/web exec vitest run
       - run: corepack pnpm --filter @template/web build
-      - run: corepack pnpm exec playwright install --with-deps chromium
+      - run: corepack pnpm --filter @template/web exec playwright install --with-deps chromium
       - run: corepack pnpm --filter @template/web test:e2e
       - run: corepack pnpm --filter @template/mobile exec expo-doctor
       - run: corepack pnpm --filter @template/mobile typecheck
@@ -89,6 +90,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - run: cp .env.example .env
       - run: docker compose config --quiet
       - run: docker build -f infra/docker/Dockerfile.backend -t template-backend .
       - run: docker build -f infra/docker/Dockerfile.web -t template-web .

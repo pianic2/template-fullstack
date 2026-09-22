@@ -10,7 +10,7 @@ Production must use HTTPS, `SESSION_COOKIE_SECURE`, `CSRF_COOKIE_SECURE`, explic
 
 ## Native
 
-Mobile obtains short-lived access and refresh JWTs from `/api/v1/auth/token` and `/api/v1/auth/token/refresh`. SimpleJWT supplies token signing and validation. The app stores credentials in Expo SecureStore through a small auth adapter; it must never use AsyncStorage or Expo public env variables for secrets. Token lifecycle and refresh handling are application policy and should be hardened before production sign-in is enabled.
+Mobile obtains short-lived access and refresh JWTs from `/api/v1/auth/token` and `/api/v1/auth/token/refresh`. SimpleJWT supplies token signing and validation. The app stores credentials in Expo SecureStore through a small auth adapter; it must never use AsyncStorage or Expo public env variables for secrets. The shared Fetch transport retries an authenticated request once after a 401, using the rotating refresh token. Refresh calls omit the access token and skip refresh recursion. Concurrent refresh attempts share one promise. Production deployments still require HTTPS and should review token lifetimes and revocation policy.
 
 ## Common contract
 

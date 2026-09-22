@@ -6,10 +6,15 @@ export default defineConfig({
     output: {
       target: './packages/api-client/src/generated/api.ts',
       schemas: './packages/api-client/src/generated/model',
-      client: 'fetch',
+      client: 'react-query',
+      httpClient: 'fetch',
       mode: 'split',
       clean: true,
-      override: { mutator: { path: './packages/api-client/src/fetcher.ts', name: 'customFetch' } },
+      override: {
+        query: { version: 5 },
+        fetch: { includeHttpResponseReturnType: true },
+        mutator: { path: './packages/api-client/src/fetcher.ts', name: 'customFetch' },
+      },
     },
   },
 });

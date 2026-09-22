@@ -62,6 +62,7 @@ lint: ## Run Python and JavaScript lint checks
 	corepack pnpm exec eslint apps packages
 
 typecheck: ## Type-check web, mobile, and shared TypeScript packages
+	corepack pnpm --filter @template/api-client typecheck
 	corepack pnpm --filter @template/web typecheck
 	corepack pnpm --filter @template/mobile typecheck
 	corepack pnpm --filter @template/shared typecheck

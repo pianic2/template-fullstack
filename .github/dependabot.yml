@@ -6,7 +6,7 @@ updates:
     groups:
       minor-and-patch:
         update-types: [minor, patch]
-  - package-ecosystem: pip
+  - package-ecosystem: uv
     directory: /apps/backend
     schedule: { interval: weekly }
     groups:

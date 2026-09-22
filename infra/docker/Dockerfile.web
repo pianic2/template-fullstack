@@ -1,0 +1,22 @@
+FROM node:24.21.0-alpine AS base
+WORKDIR /workspace
+RUN corepack enable
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/web/package.json apps/web/package.json
+COPY packages packages
+RUN corepack pnpm install --frozen-lockfile
+COPY . .
+
+FROM base AS development
+EXPOSE 5173
+CMD ["corepack", "pnpm", "--filter", "@template/web", "dev", "--host", "0.0.0.0"]
+
+FROM base AS build
+ARG VITE_API_BASE_URL=https://api.example.com/api/v1
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+RUN corepack pnpm --filter @template/web build
+
+FROM nginxinc/nginx-unprivileged:1.28-alpine AS production
+COPY --from=build /workspace/apps/web/dist /usr/share/nginx/html
+COPY infra/docker/nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 8080

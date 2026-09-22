@@ -1,0 +1,94 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18.4
+        env: { POSTGRES_DB: app, POSTGRES_USER: app, POSTGRES_PASSWORD: app }
+        ports: [5432:5432]
+        options: >-
+          --health-cmd "pg_isready -U app -d app"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://app:app@localhost:5432/app
+      DJANGO_SECRET_KEY: ci-only-not-a-secret-ci-only-not-a-secret-ci-only-not-a-secret
+      DJANGO_ALLOWED_HOSTS: example.com
+      DJANGO_CORS_ALLOWED_ORIGINS: https://example.com
+      DJANGO_CSRF_TRUSTED_ORIGINS: https://example.com
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with: { enable-cache: true, python-version: "3.13" }
+      - run: cd apps/backend && uv sync --locked --all-groups
+      - run: cd apps/backend && uv run ruff check . ../../scripts && uv run ruff format --check . ../../scripts
+      - run: cd apps/backend && uv run mypy config apps
+      - run: cd apps/backend && uv run pytest
+      - run: cd apps/backend && uv run python manage.py makemigrations --check --dry-run
+      - run: cd apps/backend && uv run python manage.py check --deploy --settings=config.settings.production
+
+  clients:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "24", cache: pnpm }
+      - run: corepack enable
+      - run: corepack pnpm install --frozen-lockfile
+      - run: corepack pnpm exec eslint apps packages
+      - run: corepack pnpm --filter @template/web typecheck
+      - run: corepack pnpm --filter @template/web exec vitest run
+      - run: corepack pnpm --filter @template/web build
+      - run: corepack pnpm exec playwright install --with-deps chromium
+      - run: corepack pnpm --filter @template/web test:e2e
+      - run: corepack pnpm --filter @template/mobile exec expo-doctor
+      - run: corepack pnpm --filter @template/mobile typecheck
+      - run: corepack pnpm --filter @template/mobile test
+      - run: corepack pnpm --filter @template/mobile exec expo export --platform android
+
+  contract:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18.4
+        env: { POSTGRES_DB: app, POSTGRES_USER: app, POSTGRES_PASSWORD: app }
+        ports: [5432:5432]
+        options: >-
+          --health-cmd "pg_isready -U app -d app"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://app:app@localhost:5432/app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with: { enable-cache: true, python-version: "3.13" }
+      - uses: actions/setup-node@v4
+        with: { node-version: "24", cache: pnpm }
+      - run: corepack enable
+      - run: cd apps/backend && uv sync --locked --all-groups
+      - run: corepack pnpm install --frozen-lockfile
+      - run: make api-check
+
+  bootstrap:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.13" }
+      - run: bash scripts/bootstrap-smoke.sh
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker compose config --quiet
+      - run: docker build -f infra/docker/Dockerfile.backend -t template-backend .
+      - run: docker build -f infra/docker/Dockerfile.web -t template-web .

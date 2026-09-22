@@ -1,0 +1,14 @@
+{
+  "expo": {
+    "name": "Product",
+    "slug": "product",
+    "scheme": "product",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "ios": { "supportsTablet": true, "bundleIdentifier": "com.example.product" },
+    "android": { "package": "com.example.product" },
+    "plugins": ["expo-router", "expo-secure-store"],
+    "experiments": { "typedRoutes": true }
+  }
+}

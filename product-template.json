@@ -1,0 +1,8 @@
+{
+  "initialized": false,
+  "name": "Product",
+  "slug": "product",
+  "pythonPackage": "product",
+  "bundleId": "com.example.product",
+  "ports": { "web": 5173, "api": 8000 }
+}

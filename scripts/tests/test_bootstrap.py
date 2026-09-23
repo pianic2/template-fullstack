@@ -1,41 +1,64 @@
 import json
-import shutil
 import subprocess
 import tempfile
 import tomllib
 import unittest
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
-
 
 class BootstrapTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.root = Path(self.temp.name)
-        for relative in [
-            "product-template.json",
-            "package.json",
-            "compose.yaml",
-            ".env.example",
-            "apps/backend/pyproject.toml",
-            "apps/backend/uv.lock",
-            "apps/web/index.html",
-            "apps/web/src/routes/App.tsx",
-            "apps/mobile/app.json",
-            "apps/mobile/package.json",
-        ]:
-            source = ROOT / relative
+        fixtures = {
+            "product-template.json": '{"initialized": false}\n',
+            "package.json": '{"name": "template-fullstack"}\n',
+            "compose.yaml": "name: ${COMPOSE_PROJECT_NAME:-template-fullstack}\n",
+            ".env.example": (
+                "COMPOSE_PROJECT_NAME=template-fullstack\nWEB_PORT=5173\nAPI_PORT=8000\n"
+            ),
+            "apps/backend/pyproject.toml": '[project]\nname = "template-backend"\n',
+            "apps/backend/uv.lock": (
+                'version = 1\nrequires-python = ">=3.13,<3.14"\n\n'
+                '[[package]]\nname = "template-backend"\nversion = "0.1.0"\n'
+                'source = { virtual = "." }\n'
+            ),
+            "apps/web/index.html": "<title>Product</title>\n",
+            "apps/web/src/routes/App.tsx": "<strong>Product</strong>\n",
+            "apps/mobile/app.json": json.dumps(
+                {
+                    "expo": {
+                        "name": "Product",
+                        "slug": "product",
+                        "scheme": "product",
+                        "ios": {"bundleIdentifier": "com.example.product"},
+                        "android": {"package": "com.example.product"},
+                    }
+                }
+            )
+            + "\n",
+            "apps/mobile/package.json": json.dumps(
+                {"dependencies": {"@personal-library/react-native-components": "0.1.0-rc.2"}}
+            )
+            + "\n",
+        }
+        for relative, contents in fixtures.items():
             target = self.root / relative
             target.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy(source, target)
+            target.write_text(contents)
 
     def tearDown(self):
         self.temp.cleanup()
 
     def run_bootstrap(self, *extra):
         return subprocess.run(
-            ["python3", str(ROOT / "scripts/bootstrap.py"), "--root", str(self.root), *extra],
+            [
+                "python3",
+                str(Path(__file__).resolve().parents[1] / "bootstrap.py"),
+                "--root",
+                str(self.root),
+                *extra,
+            ],
             capture_output=True,
             text=True,
         )

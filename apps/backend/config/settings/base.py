@@ -84,6 +84,13 @@ STORAGES: dict[str, Any] = {
 }
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# Django excludes uploaded file bytes from DATA_UPLOAD_MAX_MEMORY_SIZE; larger files
+# are streamed to temporary storage once FILE_UPLOAD_MAX_MEMORY_SIZE is exceeded.
+DATA_UPLOAD_MAX_MEMORY_SIZE = int(os.getenv("DJANGO_DATA_UPLOAD_MAX_MEMORY_SIZE", "2621440"))
+DATA_UPLOAD_MAX_NUMBER_FIELDS = int(os.getenv("DJANGO_DATA_UPLOAD_MAX_NUMBER_FIELDS", "1000"))
+DATA_UPLOAD_MAX_NUMBER_FILES = int(os.getenv("DJANGO_DATA_UPLOAD_MAX_NUMBER_FILES", "20"))
+FILE_UPLOAD_MAX_MEMORY_SIZE = int(os.getenv("DJANGO_FILE_UPLOAD_MAX_MEMORY_SIZE", "2621440"))
+
 CORS_ALLOWED_ORIGINS = [
     value for value in os.getenv("DJANGO_CORS_ALLOWED_ORIGINS", "").split(",") if value
 ]
@@ -124,7 +131,13 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ],
-    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticatedOrReadOnly"],
+    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
+    "DEFAULT_THROTTLE_RATES": {
+        "auth_session_login": "10/minute",
+        "auth_token_obtain": "10/minute",
+        "auth_token_refresh": "60/hour",
+        "auth_token_logout": "10/minute",
+    },
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 20,
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",

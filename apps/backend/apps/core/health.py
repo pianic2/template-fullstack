@@ -1,5 +1,6 @@
 from django.db import connection
 from drf_spectacular.utils import extend_schema
+from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -7,7 +8,7 @@ from rest_framework.views import APIView
 
 class LivenessView(APIView):
     authentication_classes = []
-    permission_classes = []
+    permission_classes = [AllowAny]
 
     @extend_schema(operation_id="getHealthLive", responses={200: dict})
     def get(self, request: Request) -> Response:
@@ -16,7 +17,7 @@ class LivenessView(APIView):
 
 class ReadinessView(APIView):
     authentication_classes = []
-    permission_classes = []
+    permission_classes = [AllowAny]
 
     @extend_schema(operation_id="getHealthReady", responses={200: dict, 503: dict})
     def get(self, request: Request) -> Response:

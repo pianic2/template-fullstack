@@ -75,6 +75,8 @@ paths:
             schema:
               $ref: '#/components/schemas/MobileCredentials'
         required: true
+      security:
+      - {}
       responses:
         '200':
           content:
@@ -102,6 +104,8 @@ paths:
             schema:
               $ref: '#/components/schemas/MobileLogout'
         required: true
+      security:
+      - {}
       responses:
         '200':
           description: No response body
@@ -125,6 +129,8 @@ paths:
             schema:
               $ref: '#/components/schemas/MobileRefresh'
         required: true
+      security:
+      - {}
       responses:
         '200':
           content:
@@ -137,6 +143,8 @@ paths:
       operationId: getHealthLive
       tags:
       - v1
+      security:
+      - {}
       responses:
         '200':
           content:
@@ -150,6 +158,8 @@ paths:
       operationId: getHealthReady
       tags:
       - v1
+      security:
+      - {}
       responses:
         '200':
           content:

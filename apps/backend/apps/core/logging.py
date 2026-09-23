@@ -13,13 +13,15 @@ class RequestIdFilter(logging.Filter):
 
 class JsonFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
-        return json.dumps(
-            {
-                "timestamp": datetime.now(UTC).isoformat(),
-                "level": record.levelname,
-                "logger": record.name,
-                "message": record.getMessage(),
-                "request_id": getattr(record, "request_id", "-"),
-            },
-            ensure_ascii=False,
-        )
+        event = {
+            "timestamp": datetime.now(UTC).isoformat(),
+            "level": record.levelname,
+            "logger": record.name,
+            "message": record.getMessage(),
+            "request_id": getattr(record, "request_id", "-"),
+        }
+        if record.exc_info:
+            event["exception"] = self.formatException(record.exc_info)
+        if record.stack_info:
+            event["stack"] = self.formatStack(record.stack_info)
+        return json.dumps(event, ensure_ascii=False)

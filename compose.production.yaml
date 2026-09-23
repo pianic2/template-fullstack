@@ -6,6 +6,8 @@ services:
       context: .
       dockerfile: infra/docker/Dockerfile.backend
       target: production
+      args:
+        UV_EXTRA_ARGS: ${UV_EXTRA_ARGS:-}
     environment:
       DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL to the managed PostgreSQL connection string}
       DJANGO_SETTINGS_MODULE: config.settings.production
@@ -14,6 +16,11 @@ services:
       DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:?Set explicit production hostnames}
       DJANGO_CORS_ALLOWED_ORIGINS: ${DJANGO_CORS_ALLOWED_ORIGINS:?Set explicit HTTPS CORS origins}
       DJANGO_CSRF_TRUSTED_ORIGINS: ${DJANGO_CSRF_TRUSTED_ORIGINS:?Set explicit HTTPS CSRF origins}
+      S3_STORAGE_ENABLED: ${S3_STORAGE_ENABLED:-false}
+      S3_BUCKET_NAME: ${S3_BUCKET_NAME:-}
+      S3_ENDPOINT_URL: ${S3_ENDPOINT_URL:-}
+      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-}
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:-}
     ports:
       - "127.0.0.1:${API_PORT:-8000}:8000"
     user: "10001:10001"

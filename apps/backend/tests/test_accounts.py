@@ -149,6 +149,12 @@ def test_mobile_refresh_and_logout_are_public_but_require_refresh_tokens():
 def test_browser_session_login_requires_csrf_and_uses_session_cookie():
     User.objects.create_user(email="web@example.com", password="correct-horse-battery")
     client = APIClient(enforce_csrf_checks=True)
+    without_csrf = client.post(
+        "/api/v1/auth/session/login",
+        {"email": "web@example.com", "password": "correct-horse-battery"},
+        format="json",
+    )
+    assert without_csrf.status_code == 403
     csrf_response = client.get("/api/v1/auth/csrf")
     csrf = csrf_response.json()["csrfToken"]
     response = client.post(
@@ -159,6 +165,8 @@ def test_browser_session_login_requires_csrf_and_uses_session_cookie():
     )
     assert response.status_code == 200
     assert "sessionid" in response.cookies
+    assert client.get("/api/v1/users/me").status_code == 200
+    assert client.post("/api/v1/auth/session/logout").status_code == 403
     assert client.get("/api/v1/users/me").status_code == 200
 
 

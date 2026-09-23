@@ -6,7 +6,8 @@ from typing import Any
 import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parents[2]
-SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "insecure-development-key")
+DEVELOPMENT_SECRET_KEY = "insecure-development-key-change-before-production-use"  # noqa: S105
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", DEVELOPMENT_SECRET_KEY)
 DEBUG = os.environ.get("DJANGO_DEBUG", "false").lower() == "true"
 ALLOWED_HOSTS = [host for host in os.getenv("DJANGO_ALLOWED_HOSTS", "localhost").split(",") if host]
 ROOT_URLCONF = "config.urls"
@@ -120,8 +121,8 @@ if os.getenv("S3_STORAGE_ENABLED", "false").lower() == "true":
         "OPTIONS": {
             "bucket_name": os.environ["S3_BUCKET_NAME"],
             "endpoint_url": os.getenv("S3_ENDPOINT_URL") or None,
-            "access_key": os.getenv("S3_ACCESS_KEY_ID"),
-            "secret_key": os.getenv("S3_SECRET_ACCESS_KEY"),
+            "access_key": os.getenv("S3_ACCESS_KEY_ID") or None,
+            "secret_key": os.getenv("S3_SECRET_ACCESS_KEY") or None,
             "default_acl": None,
             "file_overwrite": False,
         },

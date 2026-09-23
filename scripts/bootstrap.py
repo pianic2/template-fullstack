@@ -68,6 +68,7 @@ def bootstrap(root: Path, config: dict) -> None:
             ("API_PORT=8000", f"API_PORT={config['ports']['api']}"),
         ],
         "apps/backend/pyproject.toml": [('name = "template-backend"', f'name = "{slug}-backend"')],
+        "apps/backend/uv.lock": [('name = "template-backend"', f'name = "{slug}-backend"')],
         "apps/web/index.html": [("<title>Product</title>", f"<title>{name}</title>")],
         "apps/web/src/routes/App.tsx": [("<strong>Product</strong>", f"<strong>{name}</strong>")],
         "apps/mobile/app.json": [

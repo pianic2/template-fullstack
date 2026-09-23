@@ -2,6 +2,7 @@ import json
 import shutil
 import subprocess
 import tempfile
+import tomllib
 import unittest
 from pathlib import Path
 
@@ -18,6 +19,7 @@ class BootstrapTests(unittest.TestCase):
             "compose.yaml",
             ".env.example",
             "apps/backend/pyproject.toml",
+            "apps/backend/uv.lock",
             "apps/web/index.html",
             "apps/web/src/routes/App.tsx",
             "apps/mobile/app.json",
@@ -54,9 +56,16 @@ class BootstrapTests(unittest.TestCase):
         app = json.loads((self.root / "apps/mobile/app.json").read_text())["expo"]
         mobile = json.loads((self.root / "apps/mobile/package.json").read_text())
         config = json.loads((self.root / "product-template.json").read_text())
+        backend = tomllib.loads((self.root / "apps/backend/pyproject.toml").read_text())
+        lock = tomllib.loads((self.root / "apps/backend/uv.lock").read_text())
+        locked_project = next(
+            package for package in lock["package"] if package.get("source") == {"virtual": "."}
+        )
         self.assertEqual(app["ios"]["bundleIdentifier"], "com.acme.video")
         self.assertEqual(app["android"]["package"], "com.acme.video")
         self.assertEqual(config["pythonPackage"], "acme_video")
+        self.assertEqual(backend["project"]["name"], "acme-video-backend")
+        self.assertEqual(locked_project["name"], backend["project"]["name"])
         self.assertEqual(
             mobile["dependencies"]["@personal-library/react-native-components"], "0.1.0-rc.2"
         )

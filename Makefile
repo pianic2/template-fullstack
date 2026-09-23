@@ -3,15 +3,15 @@ SHELL := /bin/bash
 COMPOSE := docker compose
 BACKEND := cd apps/backend && uv run
 
-.PHONY: help setup init dev dev-storage dev-full down logs reset doctor \
+.PHONY: help setup init dev dev-email down logs reset doctor \
         migrate migrations shell lint typecheck test check api-schema api-client api-check \
-        web-test web-e2e mobile-check docker-build format
+        web-test web-e2e mobile-check docker-build format security-check
 
 help: ## Show available commands
 	@awk 'BEGIN {FS = ":.*##"}; /^[a-zA-Z_-]+:.*##/ {printf "%-18s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
 setup: ## Install Python and JavaScript dependencies
-	cd apps/backend && uv sync --all-groups
+	cd apps/backend && uv sync --locked --all-groups
 	corepack pnpm install --frozen-lockfile
 
 init: ## Configure this clone as a new product (interactive by default)
@@ -20,11 +20,8 @@ init: ## Configure this clone as a new product (interactive by default)
 dev: ## Start PostgreSQL, Django API and web app
 	$(COMPOSE) up --build postgres backend web
 
-dev-storage: ## Start optional S3-compatible storage and email services
-	UV_EXTRA_ARGS="--extra storage" S3_STORAGE_ENABLED=true S3_BUCKET_NAME=uploads EMAIL_ENABLED=true $(COMPOSE) --profile storage --profile email up --build postgres backend web
-
-dev-full: ## Start the core stack with optional storage and email services
-	$(MAKE) dev-storage
+dev-email: ## Start the core stack with the optional Mailpit inbox
+	EMAIL_ENABLED=true $(COMPOSE) --profile email up --build
 
 down: ## Stop services without deleting persistent data
 	$(COMPOSE) down
@@ -61,7 +58,8 @@ lint: ## Run Python and JavaScript lint checks
 	cd apps/backend && uv run ruff check . ../../scripts && uv run ruff format --check . ../../scripts
 	corepack pnpm exec eslint apps packages
 
-typecheck: ## Type-check web, mobile, and shared TypeScript packages
+typecheck: ## Type-check backend, web, mobile, and shared packages
+	cd apps/backend && uv run mypy config apps
 	corepack pnpm --filter @template/api-client typecheck
 	corepack pnpm --filter @template/web typecheck
 	corepack pnpm --filter @template/mobile typecheck
@@ -77,7 +75,11 @@ mobile-check: ## Validate Expo config, dependencies, types and Android Metro bun
 	corepack pnpm --filter @template/mobile exec expo-doctor
 	corepack pnpm --filter @template/mobile typecheck
 	corepack pnpm --filter @template/mobile test
-	corepack pnpm --filter @template/mobile exec expo export --platform android
+	EXPO_PUBLIC_API_URL=https://api.example.com/api/v1 corepack pnpm --filter @template/mobile exec expo export --platform android
+
+security-check: ## Audit locked Python dependencies and high-severity production JavaScript advisories
+	cd apps/backend && uv audit --locked
+	corepack pnpm audit --prod --audit-level high
 
 test: ## Run backend, web, mobile, and bootstrap tests
 	cd apps/backend && uv run pytest
@@ -91,9 +93,10 @@ format: ## Format Python and TypeScript sources
 
 check: ## Run the repository quality gate (requires Docker for PostgreSQL)
 	$(MAKE) lint typecheck test api-check mobile-check
+	corepack pnpm --filter @template/web build
 	cd apps/backend && uv run python manage.py makemigrations --check --dry-run
-	cd apps/backend && DJANGO_SECRET_KEY=ci-only-not-a-secret-ci-only-not-a-secret-ci-only-not-a-secret DJANGO_ALLOWED_HOSTS=example.com DJANGO_CORS_ALLOWED_ORIGINS=https://example.com DJANGO_CSRF_TRUSTED_ORIGINS=https://example.com uv run python manage.py check --deploy --settings=config.settings.production
-	bash scripts/validate_mobile_library.py
+	cd apps/backend && DATABASE_URL=postgresql://app:app@localhost:5432/app DJANGO_SECRET_KEY=ci-only-not-a-secret-ci-only-not-a-secret-ci-only-not-a-secret DJANGO_ALLOWED_HOSTS=example.com DJANGO_CORS_ALLOWED_ORIGINS=https://example.com DJANGO_CSRF_TRUSTED_ORIGINS=https://example.com uv run python manage.py check --deploy --settings=config.settings.production
+	python3 scripts/validate_mobile_library.py
 	$(COMPOSE) config --quiet
 	DATABASE_URL=postgresql://app:ci-only@localhost:5432/app DJANGO_SECRET_KEY=ci-only-not-a-secret-ci-only-not-a-secret-ci-only-not-a-secret DJANGO_ALLOWED_HOSTS=example.com DJANGO_CORS_ALLOWED_ORIGINS=https://example.com DJANGO_CSRF_TRUSTED_ORIGINS=https://example.com VITE_API_BASE_URL=https://api.example.com/api/v1 $(COMPOSE) -f compose.production.yaml config --quiet
 	bash scripts/bootstrap-smoke.sh

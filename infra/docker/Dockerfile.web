@@ -4,7 +4,7 @@ RUN corepack enable
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/web/package.json apps/web/package.json
 COPY packages packages
-RUN corepack pnpm install --frozen-lockfile
+RUN corepack pnpm --filter @template/web... install --frozen-lockfile
 COPY . .
 
 FROM base AS development

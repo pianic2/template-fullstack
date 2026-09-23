@@ -37,7 +37,7 @@ make setup
 make dev
 ```
 
-Copy `.env.example` to `.env` before `make dev`. The web app is at `http://localhost:5173`, API at `http://localhost:8000`, and PostgreSQL is exposed on loopback port 5432. Start the Expo app from the host with `corepack pnpm --filter @template/mobile start`.
+Copy `.env.example` to `.env` before `make dev`. On a fresh database, run `make migrate` in a second terminal after the backend starts; committed migrations are never applied at application startup. The web app is at `http://localhost:5173`, API at `http://localhost:8000`, and PostgreSQL is exposed on loopback port 5432. Start the Expo app from the host with `corepack pnpm --filter @template/mobile start`.
 
 ## Repository map
 
@@ -83,11 +83,11 @@ Android emulators use API origin `http://10.0.2.2:8000`; physical devices need t
 
 ## Docker and optional services
 
-The default Compose stack is PostgreSQL, Django and web. Optional MinIO and Mailpit are profile-gated: `make dev-storage` enables storage, `make dev-full` also enables email. A queue/worker is intentionally omitted until a product needs background work. See [Docker development](docs/development/setup.md).
+The default Compose stack is PostgreSQL, Django and web. `make dev-email` adds the optional Mailpit inbox. S3 support is an optional backend dependency configured against a product-owned endpoint; this template does not ship an unmaintained local S3 container. A queue/worker is intentionally omitted until a product needs background work. See [Docker development](docs/development/setup.md).
 
 ## Tests and CI
 
-Backend tests target PostgreSQL; web uses Vitest and Testing Library; mobile tests render library components, then Expo/Metro export checks package resolution. `make check` runs repository gates. CI separates backend, clients, contract, bootstrap, Docker and security checks.
+Backend tests target PostgreSQL; web uses Vitest and Testing Library; mobile tests render library components, then Expo/Metro export checks package resolution. `make check` runs deterministic repository gates; `make security-check` queries live vulnerability databases. CI separates backend, clients, contract, bootstrap, Docker and security checks.
 
 ## Coding agents
 

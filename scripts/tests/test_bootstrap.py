@@ -15,7 +15,12 @@ class BootstrapTests(unittest.TestCase):
             "package.json": '{"name": "template-fullstack"}\n',
             "compose.yaml": "name: ${COMPOSE_PROJECT_NAME:-template-fullstack}\n",
             ".env.example": (
-                "COMPOSE_PROJECT_NAME=template-fullstack\nWEB_PORT=5173\nAPI_PORT=8000\n"
+                "COMPOSE_PROJECT_NAME=template-fullstack\n"
+                "DJANGO_CORS_ALLOWED_ORIGINS=http://localhost:5173\n"
+                "DJANGO_CSRF_TRUSTED_ORIGINS=http://localhost:5173\n"
+                "WEB_PORT=5173\nAPI_PORT=8000\n"
+                "API_BASE_URL=http://localhost:8000/api/v1\n"
+                "EXPO_PUBLIC_API_URL=http://localhost:8000/api/v1\n"
             ),
             "apps/backend/pyproject.toml": '[project]\nname = "template-backend"\n',
             "apps/backend/uv.lock": (
@@ -106,6 +111,37 @@ class BootstrapTests(unittest.TestCase):
             "--name", "Acme", "--python-package", "not-valid", "--non-interactive"
         )
         self.assertEqual(result.returncode, 2)
+
+    def test_missing_template_identity_leaves_clone_untouched(self):
+        (self.root / "apps/web/src/routes/App.tsx").write_text("<strong>Changed</strong>\n")
+        result = self.run_bootstrap("--name", "Acme", "--non-interactive")
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("Expected template identity not found", result.stderr)
+        self.assertIn("template-fullstack", (self.root / "package.json").read_text())
+        self.assertFalse((self.root / ".template-initialized.json").exists())
+
+    def test_custom_ports_update_all_development_urls(self):
+        result = self.run_bootstrap(
+            "--name", "Acme", "--web-port", "15173", "--api-port", "18000", "--non-interactive"
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        env = (self.root / ".env.example").read_text()
+        self.assertIn("WEB_PORT=15173", env)
+        self.assertIn("API_PORT=18000", env)
+        self.assertIn("DJANGO_CORS_ALLOWED_ORIGINS=http://localhost:15173", env)
+        self.assertIn("DJANGO_CSRF_TRUSTED_ORIGINS=http://localhost:15173", env)
+        self.assertIn("API_BASE_URL=http://localhost:18000/api/v1", env)
+        self.assertIn("EXPO_PUBLIC_API_URL=http://localhost:18000/api/v1", env)
+
+    def test_product_name_is_escaped_for_html_and_jsx(self):
+        name = '</title><script>alert("x")</script><title> & Lab {public}'
+        result = self.run_bootstrap("--name", name, "--non-interactive")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        html = (self.root / "apps/web/index.html").read_text()
+        jsx = (self.root / "apps/web/src/routes/App.tsx").read_text()
+        self.assertNotIn("<script>", html)
+        self.assertIn("&lt;/title&gt;", html)
+        self.assertIn(f"<strong>{{{json.dumps(name)}}}</strong>", jsx)
 
 
 if __name__ == "__main__":

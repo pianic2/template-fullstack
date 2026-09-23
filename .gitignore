@@ -9,6 +9,7 @@ __pycache__/
 .mypy_cache/
 .coverage
 htmlcov/
+apps/backend/staticfiles/
 db.sqlite3
 node_modules/
 dist/

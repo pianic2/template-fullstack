@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -26,13 +27,16 @@ def main() -> int:
         "Docker Compose": version(["docker", "compose", "version", "--short"]),
         "Node": version(["node", "--version"]),
         "pnpm": version(["corepack", "pnpm", "--version"]),
-        "Python 3.13": version(
-            ["uv", "run", "--directory", str(ROOT / "apps/backend"), "python", "--version"]
+        "Python 3.13": (
+            f"Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
         ),
         "uv": version(["uv", "--version"]),
     }
     for tool, value in checks.items():
         print(f"{tool:16} {value}")
+    missing = [tool for tool, value in checks.items() if value == "not installed"]
+    if sys.version_info[:2] != (3, 13):
+        missing.append("Python 3.13")
     if not shutil.which("docker"):
         print("Docker is required for local PostgreSQL, Compose and production-image checks.")
 
@@ -49,7 +53,9 @@ def main() -> int:
         print(f"Mobile library   {package['version']} (React {react_peer}, RN {react_native_peer})")
     else:
         print("Mobile library   not installed yet; run make setup")
-    return 0
+    if missing:
+        print(f"Missing or unsupported prerequisites: {', '.join(missing)}")
+    return int(bool(missing))
 
 
 if __name__ == "__main__":

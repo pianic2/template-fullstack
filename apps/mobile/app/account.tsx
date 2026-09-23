@@ -23,7 +23,7 @@ export default function AccountScreen() {
   });
   const logout = useMutation({
     mutationFn: signOut,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: account.queryKey }),
+    onSettled: () => queryClient.resetQueries({ queryKey: account.queryKey }),
   });
 
   return (

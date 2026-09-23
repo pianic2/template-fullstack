@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import html
 import json
 import re
 import sys
@@ -44,13 +45,6 @@ def collect(args: argparse.Namespace, root: Path) -> dict:
     }
 
 
-def replace_exact(path: Path, before: str, after: str) -> None:
-    text = path.read_text(encoding="utf-8")
-    if before not in text:
-        raise ValueError(f"Expected template identity not found in {path}")
-    path.write_text(text.replace(before, after), encoding="utf-8")
-
-
 def bootstrap(root: Path, config: dict) -> None:
     config_path = root / "product-template.json"
     marker_path = root / ".template-initialized.json"
@@ -59,17 +53,37 @@ def bootstrap(root: Path, config: dict) -> None:
         raise ValueError("This clone is already initialized; refusing to rename it again")
 
     name, slug, bundle = config["name"], config["slug"], config["bundleId"]
+    web_port, api_port = config["ports"]["web"], config["ports"]["api"]
     replacements = {
         "package.json": [('"name": "template-fullstack"', f'"name": "{slug}"')],
         "compose.yaml": [("template-fullstack", slug)],
         ".env.example": [
             ("template-fullstack", slug),
-            ("WEB_PORT=5173", f"WEB_PORT={config['ports']['web']}"),
-            ("API_PORT=8000", f"API_PORT={config['ports']['api']}"),
+            ("WEB_PORT=5173", f"WEB_PORT={web_port}"),
+            ("API_PORT=8000", f"API_PORT={api_port}"),
+            (
+                "DJANGO_CORS_ALLOWED_ORIGINS=http://localhost:5173",
+                f"DJANGO_CORS_ALLOWED_ORIGINS=http://localhost:{web_port}",
+            ),
+            (
+                "DJANGO_CSRF_TRUSTED_ORIGINS=http://localhost:5173",
+                f"DJANGO_CSRF_TRUSTED_ORIGINS=http://localhost:{web_port}",
+            ),
+            (
+                "API_BASE_URL=http://localhost:8000/api/v1",
+                f"API_BASE_URL=http://localhost:{api_port}/api/v1",
+            ),
+            (
+                "EXPO_PUBLIC_API_URL=http://localhost:8000/api/v1",
+                f"EXPO_PUBLIC_API_URL=http://localhost:{api_port}/api/v1",
+            ),
         ],
         "apps/backend/pyproject.toml": [('name = "template-backend"', f'name = "{slug}-backend"')],
-        "apps/web/index.html": [("<title>Product</title>", f"<title>{name}</title>")],
-        "apps/web/src/routes/App.tsx": [("<strong>Product</strong>", f"<strong>{name}</strong>")],
+        "apps/backend/uv.lock": [('name = "template-backend"', f'name = "{slug}-backend"')],
+        "apps/web/index.html": [("<title>Product</title>", f"<title>{html.escape(name)}</title>")],
+        "apps/web/src/routes/App.tsx": [
+            ("<strong>Product</strong>", f"<strong>{{{json.dumps(name)}}}</strong>")
+        ],
         "apps/mobile/app.json": [
             ('"name": "Product"', f'"name": {json.dumps(name)}'),
             ('"slug": "product"', f'"slug": {json.dumps(slug)}'),
@@ -81,10 +95,17 @@ def bootstrap(root: Path, config: dict) -> None:
             ('"package": "com.example.product"', f'"package": {json.dumps(bundle)}'),
         ],
     }
+    updates: dict[Path, str] = {}
     for relative, pairs in replacements.items():
         target = root / relative
+        contents = target.read_text(encoding="utf-8")
         for before, after in pairs:
-            replace_exact(target, before, after)
+            if before not in contents:
+                raise ValueError(f"Expected template identity not found in {target}")
+            contents = contents.replace(before, after)
+        updates[target] = contents
+    for target, contents in updates.items():
+        target.write_text(contents, encoding="utf-8")
     config_path.write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")
     marker_path.write_text(
         json.dumps({"slug": slug, "initialized": True}, indent=2) + "\n", encoding="utf-8"

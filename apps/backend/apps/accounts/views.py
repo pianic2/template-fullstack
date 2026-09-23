@@ -7,9 +7,10 @@ from django.views.decorators.csrf import csrf_protect
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenBlacklistView, TokenObtainPairView, TokenRefreshView
 
@@ -26,8 +27,6 @@ from .serializers import (
 
 
 class CurrentUserView(APIView):
-    permission_classes = [IsAuthenticated]
-
     @extend_schema(operation_id="getUsersMe", responses=UserSerializer)
     def get(self, request: Request) -> Response:
         user = cast(User, request.user)
@@ -42,7 +41,10 @@ class CurrentUserView(APIView):
     )
 )
 class MobileTokenObtainView(TokenObtainPairView):
-    pass
+    # SimpleJWT annotates this base attribute as tuple[()], too narrowly for explicit AllowAny.
+    permission_classes = (AllowAny,)  # type: ignore[assignment]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "auth_token_obtain"
 
 
 @extend_schema_view(
@@ -53,7 +55,10 @@ class MobileTokenObtainView(TokenObtainPairView):
     )
 )
 class MobileTokenRefreshView(TokenRefreshView):
-    pass
+    # SimpleJWT annotates this base attribute as tuple[()], too narrowly for explicit AllowAny.
+    permission_classes = (AllowAny,)  # type: ignore[assignment]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "auth_token_refresh"
 
 
 @extend_schema_view(
@@ -64,7 +69,10 @@ class MobileTokenRefreshView(TokenRefreshView):
     )
 )
 class MobileTokenLogoutView(TokenBlacklistView):
-    pass
+    # SimpleJWT annotates this base attribute as tuple[()], too narrowly for explicit AllowAny.
+    permission_classes = (AllowAny,)  # type: ignore[assignment]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "auth_token_logout"
 
 
 class CsrfView(APIView):
@@ -80,6 +88,8 @@ class CsrfView(APIView):
 class SessionLoginView(APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "auth_session_login"
 
     @extend_schema(
         operation_id="postAuthSessionLogin",

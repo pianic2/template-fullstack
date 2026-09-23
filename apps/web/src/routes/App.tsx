@@ -67,7 +67,7 @@ function Account() {
   });
   const logout = useMutation({
     mutationFn: sessionLogout,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: account.queryKey }),
+    onSuccess: () => queryClient.resetQueries({ queryKey: account.queryKey }),
   });
   const showAccountError =
     login.isError ||

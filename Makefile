@@ -95,7 +95,9 @@ check: ## Run the repository quality gate (requires Docker for PostgreSQL)
 	cd apps/backend && DJANGO_SECRET_KEY=ci-only-not-a-secret-ci-only-not-a-secret-ci-only-not-a-secret DJANGO_ALLOWED_HOSTS=example.com DJANGO_CORS_ALLOWED_ORIGINS=https://example.com DJANGO_CSRF_TRUSTED_ORIGINS=https://example.com uv run python manage.py check --deploy --settings=config.settings.production
 	bash scripts/validate_mobile_library.py
 	$(COMPOSE) config --quiet
+	DATABASE_URL=postgresql://app:ci-only@localhost:5432/app DJANGO_SECRET_KEY=ci-only-not-a-secret-ci-only-not-a-secret-ci-only-not-a-secret DJANGO_ALLOWED_HOSTS=example.com DJANGO_CORS_ALLOWED_ORIGINS=https://example.com DJANGO_CSRF_TRUSTED_ORIGINS=https://example.com VITE_API_BASE_URL=https://api.example.com/api/v1 $(COMPOSE) -f compose.production.yaml config --quiet
 	bash scripts/bootstrap-smoke.sh
 
 docker-build: ## Build production backend and web images
-	$(COMPOSE) build backend web
+	docker build --target production -f infra/docker/Dockerfile.backend -t template-backend:production .
+	docker build --target production -f infra/docker/Dockerfile.web -t template-web:production .

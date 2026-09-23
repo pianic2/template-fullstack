@@ -14,4 +14,6 @@ Expo SDK, React, React Native, Router and native modules move together. Current 
 
 ## PostgreSQL and images
 
-Pin production image majors/minors intentionally, review PostgreSQL major upgrade notes, and use tested backup/restore before upgrading. Keep Compose and production versions aligned.
+External images that can be verified through their publisher's registry are pinned by tag and multi-platform digest; Dependabot monitors Dockerfiles and Compose directories. Review PostgreSQL major upgrade notes and use tested backup/restore before upgrading. Keep Compose, CI and production versions aligned.
+
+The NGINX base image is pinned to its verified OCI index digest. The configured MinIO reference, `quay.io/minio/minio:RELEASE.2026-02-11T19-13-46Z`, currently returns `not found`; MinIO's upstream repository is archived and no longer publishes community container images. It remains unchanged rather than being replaced with an unrelated third-party build or an unverified digest. The optional `storage` Compose profile therefore needs a deliberately selected, maintained S3-compatible image before use.

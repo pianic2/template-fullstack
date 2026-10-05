@@ -4,7 +4,7 @@ COMPOSE := docker compose
 BACKEND := cd apps/backend && uv run
 
 .PHONY: help setup init dev dev-email down logs reset doctor \
-        migrate migrations shell lint typecheck test check api-schema api-client api-check \
+        migrate migrations shell lint typecheck test check api-schema api-client api-check agent-skills \
         web-test web-e2e mobile-check docker-build format security-check
 
 help: ## Show available commands
@@ -54,6 +54,9 @@ api-client: ## Generate TypeScript clients from the committed OpenAPI contract
 api-check: ## Regenerate schema and client and fail on drift
 	bash scripts/api-check.sh
 
+agent-skills: ## Validate, resolve, and activate Codex skills (pass CLI flags in ARGS)
+	python3 scripts/agent/cli.py $(ARGS)
+
 lint: ## Run Python and JavaScript lint checks
 	cd apps/backend && uv run ruff check . ../../scripts && uv run ruff format --check . ../../scripts
 	corepack pnpm exec eslint apps packages
@@ -86,6 +89,7 @@ test: ## Run backend, web, mobile, and bootstrap tests
 	corepack pnpm --filter @template/web exec vitest run
 	corepack pnpm --filter @template/mobile test
 	python3 -m unittest discover -s scripts/tests -v
+	$(MAKE) agent-skills ARGS="--validate --check"
 
 format: ## Format Python and TypeScript sources
 	cd apps/backend && uv run ruff check --fix . && uv run ruff format .

@@ -1,0 +1,93 @@
+# Deterministic local routing rules. Keep human-facing descriptions in SKILL.md.
+[settings]
+max_skills = 5
+scoring_version = 1
+minimum_score = 1
+
+[[skills]]
+id = "api-contract"
+path = "skills/api-contract"
+priority = 90
+path_globs = ["openapi/**", "packages/api-client/**"]
+keywords = ["openapi", "orval", "api contract", "schema drift", "api client"]
+regexes = ["\\b(api|serializer|endpoint)\\s+(contract|schema|change)\\b"]
+labels = ["api", "contract"]
+implies = ["testing"]
+
+[[skills]]
+id = "django-backend"
+path = "skills/django-backend"
+priority = 80
+path_globs = ["apps/backend/**"]
+keywords = ["django", "drf", "postgresql", "jwt", "authentication", "serializer", "migration"]
+labels = ["backend", "auth"]
+implies = ["testing"]
+
+[[skills]]
+id = "docker-development"
+path = "skills/docker-development"
+priority = 75
+path_globs = ["compose.yaml", "compose.production.yaml", "docker-compose.yml", "infra/docker/**", ".devcontainer/**"]
+keywords = ["docker", "compose", "container", "dockerfile", "infrastructure"]
+labels = ["docker", "infrastructure"]
+implies = ["testing"]
+
+[[skills]]
+id = "expo-mobile"
+path = "skills/expo-mobile"
+priority = 85
+path_globs = ["apps/mobile/**"]
+keywords = ["expo", "react native", "metro", "securestore"]
+labels = ["mobile", "expo"]
+implies = ["mobile-component-library", "testing"]
+
+[[skills]]
+id = "mobile-component-library"
+path = "skills/mobile-component-library"
+priority = 70
+path_globs = []
+keywords = ["native component", "component library", "react native component"]
+labels = ["native-ui"]
+
+[[skills]]
+id = "react-web"
+path = "skills/react-web"
+priority = 85
+path_globs = ["apps/web/**"]
+keywords = ["react web", "vite", "browser ui", "web route"]
+labels = ["web"]
+implies = ["testing"]
+
+[[skills]]
+id = "repo-readme"
+path = "skills/repo-readme"
+priority = 60
+path_globs = ["README.md"]
+keywords = ["readme", "repository landing page", "repository documentation"]
+labels = ["documentation"]
+
+[[skills]]
+id = "security-review"
+path = "skills/security-review"
+priority = 95
+path_globs = ["SECURITY.md", "apps/backend/config/settings/**"]
+keywords = ["security", "jwt", "authentication", "csrf", "cors", "secret", "upload security"]
+labels = ["security", "auth"]
+implies = ["testing"]
+
+[[skills]]
+id = "template-bootstrap"
+path = "skills/template-bootstrap"
+priority = 60
+path_globs = ["scripts/bootstrap.py", "product-template.json"]
+keywords = ["bootstrap", "template initialization", "clone initialization"]
+labels = ["bootstrap"]
+implies = ["testing"]
+
+[[skills]]
+id = "testing"
+path = "skills/testing"
+priority = 50
+path_globs = ["scripts/tests/**", "apps/**/tests/**"]
+keywords = ["test", "tests", "testing", "regression", "quality gate", "verification"]
+labels = ["testing"]

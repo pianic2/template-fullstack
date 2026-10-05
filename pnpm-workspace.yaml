@@ -8,6 +8,14 @@ allowBuilds:
   esbuild: true
   unrs-resolver: true
 
+auditConfig:
+  ignoreGhsas:
+    # No patched npm releases are currently published for these transitive Expo dependencies.
+    # Remove each exception when its upstream package ships a fixed version.
+    - GHSA-86w9-cpqp-85rv
+    - GHSA-vfj7-8cjw-p6xm
+
 overrides:
+  expo-asset>expo-constants: 57.0.20
   '@types/react': 19.2.18
   '@types/react-dom': 19.2.7

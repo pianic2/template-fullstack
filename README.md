@@ -1,67 +1,66 @@
-# Full-stack product template
+<p align="center">
+  <img src="docs/assets/readme-hero.svg" alt="" width="100%" />
+</p>
 
-An agent-first starting point for products that need a Django API, a React web client, and an Expo mobile app. The clients share one generated OpenAPI contract. Native UI comes from the maintained [`@personal-library/react-native-components`](https://www.npmjs.com/package/@personal-library/react-native-components) package.
+<h1 align="center">Full-stack product template</h1>
 
-## Architecture
+<p align="center">A Django API, React web app and Expo mobile app connected by one generated OpenAPI contract.</p>
 
-```mermaid
-flowchart LR
-  Web[React Web] -->|generated API client| API[Django API]
-  Mobile[Expo Mobile] -->|generated API client| API
-  API --> DB[(PostgreSQL)]
-  API -. optional .-> Redis[Redis / Workers]
-  API -. optional .-> S3[S3 compatible storage]
-  Mobile --> UI[@personal-library/react-native-components]
-```
-
-The web and mobile apps share the API contract. The component library is the mobile rendering foundation and does not participate in the backend contract.
-
-## Stack
-
-- Python 3.13, Django 5.2 LTS, Django REST Framework, PostgreSQL 18.4, psycopg 3, uv.
-- Node.js 24 LTS, pnpm workspaces, React 19, TypeScript, Vite 8, React Router, TanStack Query.
-- Expo SDK 57, React Native 0.86.3, Expo Router, SecureStore, personal component library 0.1.0-rc.2.
-- drf-spectacular and Orval-generated Fetch clients with TanStack Query hooks.
-
-Mobile compatibility is pinned to the newest stable Expo/RN line accepted by the personal library's peers. The component library's `rc` channel is the only prerelease dependency exception. See [mobile UI architecture](docs/architecture/mobile-ui.md) and [upgrade policy](docs/upgrades.md).
+<p align="center">
+  <img alt="Python 3.13" src="https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white" />
+  <img alt="Node.js 24" src="https://img.shields.io/badge/Node.js-24-339933?logo=nodedotjs&logoColor=white" />
+  <img alt="PostgreSQL 18.4" src="https://img.shields.io/badge/PostgreSQL-18.4-4169E1?logo=postgresql&logoColor=white" />
+</p>
 
 ## Quick start
 
-Requirements: Git, Docker with Compose v2, Node 24, Corepack/pnpm, Python 3.13 and uv.
+Requirements: Git, Docker Compose v2, Node.js 24, Corepack, Python 3.13 and uv.
 
 ```sh
-git clone <your-template-url> my-product
+git clone https://github.com/pianic2/template-fullstack.git my-product
 cd my-product
+cp .env.example .env
 make init
 make setup
 make dev
 ```
 
-Copy `.env.example` to `.env` before `make dev`. On a fresh database, run `make migrate` in a second terminal after the backend starts; committed migrations are never applied at application startup. The web app is at `http://localhost:5173`, API at `http://localhost:8000`, and PostgreSQL is exposed on loopback port 5432. Start the Expo app from the host with `corepack pnpm --filter @template/mobile start`.
+On a fresh database, run `make migrate` in a second terminal after the backend starts. The web app is at `http://localhost:5173`; the API is at `http://localhost:8000`. Run the Expo app on the host with `corepack pnpm --filter @template/mobile start`.
 
-## Repository map
+## Architecture
 
-```text
-apps/backend/       Django API, settings, domain apps and PostgreSQL tests
-apps/web/           Accessible React DOM application
-apps/mobile/        Expo Router app using the personal native component library
-packages/api-client OpenAPI-generated TypeScript Fetch client
-packages/shared     Platform-neutral TypeScript only
-packages/*-config   Shared TypeScript and ESLint configuration
-openapi/            Committed generated API contract
-infra/docker/       Development and production images
-docs/               Architecture, setup, agent and deployment guidance
-.agents/skills/     Focused repository-local agent workflows
-.codex/             Project Codex settings and custom agents
+```mermaid
+flowchart LR
+  Web[React web] --> Client[Generated TypeScript client]
+  Mobile[Expo mobile] --> Client
+  Client --> API[Django REST API]
+  API --> DB[(PostgreSQL)]
+  Mobile --> UI[Personal React Native component library]
 ```
 
-## Common commands
+Django owns HTTP behavior and persistence. `openapi/openapi.yaml` is the client contract; Orval generates the shared Fetch client. The web and mobile apps own their platform UI, and `packages/shared` contains platform-neutral TypeScript.
 
-Run `make help` for the full list. Main commands: `make init`, `make setup`, `make dev`, `make down`, `make logs`, `make doctor`, `make migrate`, `make lint`, `make typecheck`, `make test`, `make api-schema`, `make api-client`, `make api-check`, `make check`.
+## Development
 
-## Backend and API contract
+| Command | Purpose |
+| --- | --- |
+| `make help` | List available Make targets |
+| `make doctor` | Check local tools and configuration |
+| `make down` | Stop development services |
+| `make logs` | Follow Compose logs |
+| `make dev-email` | Start the optional Mailpit profile |
+| `make lint` | Run Python and JavaScript lint checks |
+| `make typecheck` | Type-check backend and TypeScript workspaces |
 
-Django owns `/api/v1/`, email identity, browser session/CSRF authentication and mobile JWT endpoints. PostgreSQL is required for local development, CI and production. Schema and client updates are generated in order:
+PostgreSQL is the supported database. Migrations are committed and run with `make migrate`; they are not applied at application startup. Expo runs on the host, outside Compose.
+
+## Testing
+
+Run `make test` for backend, web, mobile and bootstrap tests. `make check` runs the repository quality gates, including API drift and Docker configuration checks; it requires Docker and a PostgreSQL service for backend tests.
+
+## API and authentication
+
+Django REST Framework and drf-spectacular define the API. After changing routes or serializers, regenerate the schema and client in order:
 
 ```sh
 make api-schema
@@ -69,45 +68,40 @@ make api-client
 make api-check
 ```
 
-Never hand-edit OpenAPI generated client files. Read [the contract guide](docs/architecture/api-contract.md) and [authentication architecture](docs/architecture/authentication.md).
+Do not edit generated client files by hand. Browser authentication uses Django session cookies and CSRF protection; mobile uses short-lived JWTs stored with Expo SecureStore.
 
-## Web development
+## Documentation
 
-`apps/web` uses semantic DOM elements, React Router and TanStack Query. It imports API methods from `@template/api-client`; browser auth uses same-origin/credentialed session cookies and CSRF, never localStorage tokens.
+- [Documentation index](docs/README.md)
+- [Architecture overview](docs/architecture/overview.md)
+- [API contract](docs/architecture/api-contract.md) · [Authentication](docs/architecture/authentication.md)
+- [Development setup](docs/development/setup.md) · [Mobile development](docs/development/mobile.md)
+- [Production deployment](docs/deployment/production.md) · [Upgrade policy](docs/upgrades.md)
+- [Agent workflow](docs/agents/overview.md) · [Deterministic skill discovery](docs/agents/skills.md)
 
-## Mobile development
+## Deployment
 
-`apps/mobile` is run on the host; Compose does not try to host iOS simulators or Android emulators. The app uses the personal component package's public root exports for its theme, text, layout and buttons. Follow [mobile setup](docs/development/mobile.md) and [library ownership rules](docs/architecture/mobile-ui.md).
+Deployment images and production Compose configuration are documented in [the production guide](docs/deployment/production.md). Use explicit HTTPS origins, a managed PostgreSQL service and a secret manager for production settings.
 
-Android emulators use API origin `http://10.0.2.2:8000`; physical devices need the host machine's LAN address. Set `EXPO_PUBLIC_API_URL` accordingly. Never put native secrets in Expo public environment variables.
+## Project structure
 
-## Docker and optional services
+| Path | Contents |
+| --- | --- |
+| `apps/backend/` | Django API and PostgreSQL tests |
+| `apps/web/` | React web application |
+| `apps/mobile/` | Expo app using the personal component library |
+| `packages/api-client/` | OpenAPI-generated TypeScript client |
+| `packages/shared/` | Platform-neutral TypeScript |
+| `openapi/` | Committed API schema |
+| `docs/` | Architecture, setup, deployment and agent guides |
 
-The default Compose stack is PostgreSQL, Django and web. `make dev-email` adds the optional Mailpit inbox. S3 support is an optional backend dependency configured against a product-owned endpoint; this template does not ship an unmaintained local S3 container. A queue/worker is intentionally omitted until a product needs background work. See [Docker development](docs/development/setup.md).
+## Template setup
 
-## Tests and CI
-
-Backend tests target PostgreSQL; web uses Vitest and Testing Library; mobile tests render library components, then Expo/Metro export checks package resolution. `make check` runs deterministic repository gates; `make security-check` queries live vulnerability databases. CI separates backend, clients, contract, bootstrap, Docker and security checks.
-
-## Coding agents
-
-Start with `AGENTS.md`, then the nearest scoped instructions. `.codex/agents/` provides narrow architect, backend, web, mobile, tester and reviewer roles. Repository-local skills live in `.agents/skills/`. Mobile UI ownership is explicit: inspect and reuse the canonical library before creating generic primitives.
-
-## Bootstrap a new product
-
-Use GitHub **Use this template**, clone the result, then run `make init`. Non-interactive example:
+Use GitHub **Use this template**, then run `make init` in the new clone. For non-interactive setup:
 
 ```sh
 python3 scripts/bootstrap.py --name "Acme Video" --slug acme-video \
   --python-package acme_video --bundle-id com.acme.video --non-interactive
 ```
 
-Bootstrap renames only an explicit list of identity/config files, writes an ignored local initialization marker, and leaves the component package/version unchanged.
-
-## Deployment philosophy
-
-The backend image runs Gunicorn as an unprivileged user; the static web image uses unprivileged Nginx. Set a strong secret, explicit hosts/origins, HTTPS proxy settings and a managed PostgreSQL URL. Migrations are a release step, not application startup. Review [production deployment](docs/deployment/production.md) and `SECURITY.md` before deploying.
-
-## Dependency upgrades
-
-Dependabot proposes weekly patch/minor updates. Django upgrades follow the LTS support window; Expo/RN upgrades are accepted only after validating the personal library peer range, Expo's SDK mapping, render test and Metro export. See [upgrade policy](docs/upgrades.md).
+`make init` and the bootstrap script rename the documented product identity values; they do not change the component package version.

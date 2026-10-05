@@ -59,12 +59,20 @@ labels = ["web"]
 implies = ["testing"]
 
 [[skills]]
+id = "repo-docs"
+path = "skills/repo-docs"
+priority = 60
+path_globs = ["docs/**"]
+keywords = ["repository documentation", "docs structure", "documentation index", "reorganize documentation"]
+labels = ["documentation", "docs"]
+
+[[skills]]
 id = "repo-readme"
 path = "skills/repo-readme"
 priority = 60
 path_globs = ["README.md"]
-keywords = ["readme", "repository landing page", "repository documentation"]
-labels = ["documentation"]
+keywords = ["readme", "repository landing page"]
+labels = ["readme"]
 
 [[skills]]
 id = "security-review"

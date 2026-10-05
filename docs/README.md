@@ -1,12 +1,25 @@
 # Documentation
 
-Use these guides for repository setup, design boundaries and operational procedures.
+## Getting Started
+- [Development setup](getting-started/setup.md): prerequisites, environment, first run and optional services
 
-| Topic | Guides |
-| --- | --- |
-| System design | [Architecture overview](architecture/overview.md), [API contract](architecture/api-contract.md), [authentication](architecture/authentication.md), [mobile UI ownership](architecture/mobile-ui.md) |
-| Local development | [Setup](development/setup.md), [mobile development](development/mobile.md) |
-| Operations | [Production deployment](deployment/production.md), [upgrade policy](upgrades.md) |
-| Coding agents | [Agent workflow](agents/overview.md), [deterministic skill discovery](agents/skills.md) |
+## Architecture
+- [Architecture overview](architecture/overview.md)
+- [API contract](architecture/api-contract.md)
+- [Authentication](architecture/authentication.md)
+- [Mobile UI ownership](architecture/mobile-ui.md)
 
-The root [README](../README.md) has the quick start and repository map. Root and scoped `AGENTS.md` files define the instructions for work in each code area.
+## Development
+- [Mobile development](development/mobile.md)
+
+## Operations
+- [Production deployment](operations/production-deployment.md)
+- [Upgrade policy](operations/upgrades.md)
+
+## Coding Agents
+- [Agent workflow](agents/overview.md)
+- [Deterministic skill discovery](agents/skills.md), including the bundled `repo-docs` and `repo-readme` skills
+
+## Repository Files
+- [Root README](../README.md), [Contributing](../CONTRIBUTING.md) and [Security policy](../SECURITY.md)
+- Root and scoped `AGENTS.md` files define the instructions for each code area.

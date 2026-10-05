@@ -16,4 +16,4 @@ Report vulnerabilities privately to the repository maintainers. Do not disclose 
 - Keep dependencies current through Dependabot and review security alerts. CI runs CodeQL.
 - `make security-check` audits the locked Python graph, including optional storage, and blocks high-severity production JavaScript advisories. Review lower-severity findings with their actual usage paths.
 
-See `docs/architecture/authentication.md` and `docs/deployment/production.md` before exposing the API publicly.
+See `docs/architecture/authentication.md` and `docs/operations/production-deployment.md` before exposing the API publicly.

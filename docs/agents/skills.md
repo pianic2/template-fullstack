@@ -13,6 +13,10 @@ Codex prompt → local signals → deterministic score → requires/implies clos
              → stable order → max_skills gate → manifest → active subset + selected context
 ```
 
+## Bundled documentation skills
+
+`repo-docs` governs the structure of `docs/` (discover, classify, deduplicate, reorganize, cross-link, validate) and is routed by `docs/**` paths or documentation keywords. `repo-readme` governs the root `README.md` and generates the titled stack background with its bundled `scripts/generate_readme_background.py`, which downloads Simple Icons and therefore needs network access when run. Both are canonical skills in `.agent-system/skills/`, so they are always present in clones of this template. `.claude/skills/` contains symlinks to the canonical copies for Claude Code, and `skills-lock.json` records their upstream source (`pianic2/agent-skills`) and hashes.
+
 ## Registry and routing rules
 
 Every `[[skills]]` entry has `id`, canonical `path`, integer `priority`, and optional `path_globs`, `keywords`, `regexes`, `labels`, `requires`, and `implies`. The ID, directory name, and `SKILL.md` frontmatter `name` must match. Human-facing descriptions live only in `SKILL.md`.

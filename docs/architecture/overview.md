@@ -21,4 +21,4 @@ flowchart LR
 
 PostgreSQL is the supported database. Development services run in Compose; Expo runs on the host to connect to simulators and devices. Mailpit is an optional Compose profile. S3-compatible storage is an optional backend extra configured against a product-owned endpoint. No queue framework is included by default.
 
-Production images are provided for the Gunicorn backend and static Nginx web app. TLS termination, managed PostgreSQL, secrets and production infrastructure are configured by the deploying product. See [production deployment](../deployment/production.md).
+Production images are provided for the Gunicorn backend and static Nginx web app. TLS termination, managed PostgreSQL, secrets and production infrastructure are configured by the deploying product. See [production deployment](../operations/production-deployment.md).

@@ -1,16 +1,19 @@
-<p align="center">
-  <img src="docs/assets/readme-hero.svg" alt="" width="100%" />
-</p>
+<h1 align="center">
+  <img
+    src="docs/assets/readme-background.svg"
+    alt="Full-stack product template — Django API, React web and Expo mobile on one OpenAPI contract"
+    width="100%"
+  />
+</h1>
 
-<h1 align="center">Full-stack product template</h1>
+<p align="center">
+  <img alt="Django, React and Expo on PostgreSQL" src="https://img.shields.io/badge/Django%20%2B%20React%20%2B%20Expo-PostgreSQL-102b32?style=for-the-badge" />
+  <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-f2cb87?style=for-the-badge" /></a>
+  <a href="https://github.com/pianic2/template-fullstack/actions/workflows/ci.yml"><img alt="CI status" src="https://img.shields.io/github/actions/workflow/status/pianic2/template-fullstack/ci.yml?branch=main&style=for-the-badge&label=CI" /></a>
+  <a href="docs/README.md"><img alt="Documentation" src="https://img.shields.io/badge/docs-index-e78965?style=for-the-badge" /></a>
+</p>
 
 <p align="center">A Django API, React web app and Expo mobile app connected by one generated OpenAPI contract.</p>
-
-<p align="center">
-  <img alt="Python 3.13" src="https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white" />
-  <img alt="Node.js 24" src="https://img.shields.io/badge/Node.js-24-339933?logo=nodedotjs&logoColor=white" />
-  <img alt="PostgreSQL 18.4" src="https://img.shields.io/badge/PostgreSQL-18.4-4169E1?logo=postgresql&logoColor=white" />
-</p>
 
 ## Quick start
 
@@ -72,16 +75,16 @@ Do not edit generated client files by hand. Browser authentication uses Django s
 
 ## Documentation
 
-- [Documentation index](docs/README.md)
-- [Architecture overview](docs/architecture/overview.md)
-- [API contract](docs/architecture/api-contract.md) · [Authentication](docs/architecture/authentication.md)
-- [Development setup](docs/development/setup.md) · [Mobile development](docs/development/mobile.md)
-- [Production deployment](docs/deployment/production.md) · [Upgrade policy](docs/upgrades.md)
+Start at the [documentation index](docs/README.md).
+
+- [Development setup](docs/getting-started/setup.md) · [Mobile development](docs/development/mobile.md)
+- [Architecture overview](docs/architecture/overview.md) · [API contract](docs/architecture/api-contract.md) · [Authentication](docs/architecture/authentication.md)
+- [Production deployment](docs/operations/production-deployment.md) · [Upgrade policy](docs/operations/upgrades.md)
 - [Agent workflow](docs/agents/overview.md) · [Deterministic skill discovery](docs/agents/skills.md)
 
 ## Deployment
 
-Deployment images and production Compose configuration are documented in [the production guide](docs/deployment/production.md). Use explicit HTTPS origins, a managed PostgreSQL service and a secret manager for production settings.
+Deployment images and production Compose configuration are documented in [the production guide](docs/operations/production-deployment.md). Use explicit HTTPS origins, a managed PostgreSQL service and a secret manager for production settings.
 
 ## Project structure
 
@@ -93,7 +96,8 @@ Deployment images and production Compose configuration are documented in [the pr
 | `packages/api-client/` | OpenAPI-generated TypeScript client |
 | `packages/shared/` | Platform-neutral TypeScript |
 | `openapi/` | Committed API schema |
-| `docs/` | Architecture, setup, deployment and agent guides |
+| `docs/` | Getting started, architecture, development, operations and agent guides |
+| `.agent-system/` | Canonical agent skills, including `repo-docs` and `repo-readme` |
 
 ## Template setup
 
@@ -105,3 +109,11 @@ python3 scripts/bootstrap.py --name "Acme Video" --slug acme-video \
 ```
 
 `make init` and the bootstrap script rename the documented product identity values; they do not change the component package version.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) and the root and scoped `AGENTS.md` files.
+
+## License
+
+[MIT](LICENSE)
